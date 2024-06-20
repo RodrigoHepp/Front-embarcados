@@ -36,6 +36,7 @@ void loop() {
 void handleRoot() {
   String html = "<!DOCTYPE html><html>";
   html += "<head><title>Sistema de Alerta</title>";
+  html += "<meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
   html += "<style>";
   html += "body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; color: #333; }";
   html += "h1 { color: #0056b3; }";
@@ -53,13 +54,13 @@ void handleRoot() {
   html += "</head>";
   html += "<body>";
   html += "<div class='container'>";
-  html += "<h1>SISTEMA DE ALERTA PARA PROTECAO DE COBAIAS</h1>";
+  html += "<h1>SISTEMA DE ALERTA PARA PROTEÇÃO DE COBAIAS</h1>";
   html += "<div class='input-group'>";
   html += "<label for='operator'>Operadora:</label>";
   html += "<select id='operator'><option value='41'>Tim</option><option value='15'>Vivo</option><option value='31'>Oi</option><option value='21'>Claro</option></select>";
   html += "</div>";
   html += "<div class='input-group'>";
-  html += "<label for='number'>Numero:</label>";
+  html += "<label for='number'>Número:</label>";
   html += "<input type='number' id='number'>";
   html += "</div>";
   html += "<div class='input-group'>";
