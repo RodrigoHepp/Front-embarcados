@@ -1,0 +1,14 @@
+{
+    "htmlWhitespaceSensitivity": "ignore",
+    "singleQuote": true,
+    "trailingComma": "none",
+    "bracketSameLine": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "printWidth": 200
+        }
+      }
+    ]
+  }

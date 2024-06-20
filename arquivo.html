@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistema de Alerta</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f0f0f0;
+        color: #333;
+      }
+      h1 {
+        color: #0056b3;
+      }
+      p {
+        font-size: 18px;
+      }
+      .container {
+        margin-top: 50px;
+      }
+      .content {
+        display: inline-block;
+        text-align: left;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .btn {
+        padding: 10px 20px;
+        margin: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .btn-danger {
+        background-color: #f44336;
+      }
+      .input-group {
+        margin: 10px 0;
+      }
+      input,
+      select {
+        padding: 10px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SISTEMA DE ALERTA PARA PROTECAO DE COBAIAS</h1>
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <div class="input-group" style="width: 30%; display: flex; justify-content: flex-start; align-items: center;">
+          <label for="operator" style="width: 50%;">Operadora:</label>
+          <select id="operator" style="width: 50%;">
+            <option value="41">Tim</option>
+            <option value="15">Vivo</option>
+            <option value="31">Oi</option>
+            <option value="21">Claro</option>
+          </select>
+        </div>
+        <div class="input-group" style="width: 30%; display: flex; justify-content: flex-start; align-items: center;">
+          <label for="number" style="width: 50%;">Numero:</label>
+          <input type="number" id="number" style="width: 50%;"/>
+        </div>
+        <div class="input-group" style="width: 30%; display: flex; justify-content: flex-start; align-items: center;">
+          <label for="message" style="width: 50%;">Mensagem:</label>
+          <input type="text" id="message" style="width: 50%;"/>
+        </div>
+        <button class="btn" onclick="addEntry()">Adicionar</button>
+      </div>
+      <hr />
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Numero</th>
+          <th>Mensagem</th>
+          <th>Acao</th>
+        </tr>
+        for (int i = 0; i < 5; i++) {
+        <tr>
+          <td>" + String(i + 1) + "</td>
+          <td>" + numbers[i] + "</td>
+          <td>" + messages[i] + "</td>
+          <td><button class="btn btn-danger" onclick='deleteEntry(" + String(i) + ")'>X</button></td>
+        </tr>
+        }
+      </table>
+    </div>
+    <script>
+      function addEntry() {
+        var operator = document.getElementById('operator').value;
+        var number = document.getElementById('number').value;
+        var message = document.getElementById('message').value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            if (this.responseText == 'FULL') {
+              alert('Maximo de 5 numeros atingido. Por favor, exclua um numero antes de adicionar outro.');
+            } else {
+              location.reload();
+            }
+          }
+        };
+        xhttp.open('GET', '/add?operator=' + operator + '&number=' + number + '&message=' + message, true);
+        xhttp.send();
+      }
+      function deleteEntry(index) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open('GET', '/delete?index=' + index, true);
+        xhttp.send();
+        setTimeout(function () {
+          location.reload();
+        }, 500);
+      }
+    </script>
+  </body>
+</html>
