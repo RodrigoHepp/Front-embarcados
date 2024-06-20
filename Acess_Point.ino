@@ -60,7 +60,7 @@ void handleRoot() {
   html += "</div>";
   html += "<div class='input-group'>";
   html += "<label for='number'>Numero:</label>";
-  html += "<input type='text' id='number'>";
+  html += "<input type='number' id='number'>";
   html += "</div>";
   html += "<div class='input-group'>";
   html += "<label for='message'>Mensagem:</label>";
