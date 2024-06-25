@@ -1,39 +1,80 @@
+// -------------------------------------------------------------------//
+//                          INCLUDE E DEFINDE                         //
+// -------------------------------------------------------------------//
 #include <WiFi.h>
 #include <WebServer.h>  // Inclui a biblioteca do servidor web
 
+#define BOTAO     21
+
+// -------------------------------------------------------------------//
+//                            VARIAVEIS                               //
+// -------------------------------------------------------------------//
 WebServer server(80);  // Cria uma instância do servidor web
 
-const char* ssid = "Sistema De Alerta";
+const char* ssid = "Sistema De Testes";
 const char* password = "cobaias123";
 
 String numbers[5] = {"", "", "", "", ""};
 String messages[5] = {"", "", "", "", ""};
 
-void setup() {
+int _click = 1;
+
+// -------------------------------------------------------------------//
+//                              SETUP                                 //
+// -------------------------------------------------------------------//
+void setup() 
+{
+  // ----- Configuracao do Acess Point
   Serial.begin(115200);
   Serial.println();
-  Serial.print("Configuring access point...");
+  Serial.print("Configurando Acess Ponit...");
   
-  // Configurando o ponto de acesso
   WiFi.softAP(ssid, password);
 
   IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
+  Serial.print("Endereco IP do Acess Point: ");
   Serial.println(IP);
   
   // Iniciando o servidor web
-  server.on("/", handleRoot);
-  server.on("/add", handleAdd);
-  server.on("/delete", handleDelete);
+  server.on("/", pagina_principal);
+  server.on("/add", add_numero);
+  server.on("/delete", deleta_numero);
   server.begin();
-  Serial.println("HTTP server started");
+  Serial.println("server HTTP iniciado");
+
+  // ----- Configuracao do SIM800l
+  Serial2.begin(115200);
+  delay(3000);
+
+  // ----- Botao
+  pinMode(BOTAO, INPUT_PULLUP);
 }
 
-void loop() {
+// -------------------------------------------------------------------//
+//                                LOOP                                //
+// -------------------------------------------------------------------//                      
+void loop() 
+{
+  // Acess Point
   server.handleClient();
+
+  // GPRS
+  int _click = digitalRead(BOTAO);
+
+  if(_click == 0)
+  {
+    delay(300);
+    Serial.println("Ligacao");
+
+    //faz_ligacao();
+  }
 }
 
-void handleRoot() {
+// -------------------------------------------------------------------//
+//                                 HTML                               //
+// -------------------------------------------------------------------//
+void pagina_principal() 
+{
   String html = "<!DOCTYPE html><html>";
   html += "<head><title>Sistema de Alerta</title>";
   html += "<meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
@@ -106,37 +147,106 @@ void handleRoot() {
   server.send(200, "text/html", html);
 }
 
-void handleAdd() {
-  if (server.hasArg("operator") && server.hasArg("number") && server.hasArg("message")) {
+// -------------------------------------------------------------------//
+//                           ADICIONAR NUMERO                         //
+// -------------------------------------------------------------------//
+void add_numero() 
+{
+  if (server.hasArg("operator") && server.hasArg("number") && server.hasArg("message")) 
+  {
     String op = server.arg("operator");
     String number = server.arg("number");
     String message = server.arg("message");
     number = op + number;
 
-    bool added = false;
-    for (int i = 0; i < 5; i++) {
-      if (numbers[i] == "") {
+    bool adicionado = false;
+    for (int i = 0; i < 5; i++) 
+    {
+      if (numbers[i] == "") 
+      {
         numbers[i] = number;
         messages[i] = message;
-        added = true;
+        adicionado = true;
         break;
       }
     }
-    if (!added) {
+
+    if (!adicionado) 
+    {
       server.send(200, "text/plain", "FULL");
       return;
     }
   }
+
   server.send(200, "text/plain", "OK");
 }
 
-void handleDelete() {
-  if (server.hasArg("index")) {
+// -------------------------------------------------------------------//
+//                            APAGAR NUMERO                           //
+// -------------------------------------------------------------------//
+void deleta_numero() 
+{
+  if (server.hasArg("index")) 
+  {
     int index = server.arg("index").toInt();
-    if (index >= 0 && index < 5) {
+
+    if (index >= 0 && index < 5) 
+    {
       numbers[index] = "";
       messages[index] = "";
     }
   }
   server.send(200, "text/plain", "OK");
+}
+
+void faz_ligacao()
+{
+  for(int i = 0; i < 5; i++)
+  {
+    if (numbers[i] != "") 
+    {
+      //Serial2.println("AT+CMGF=0"); // Configura o modo de Ligacao
+      //update_serial();
+
+      String numero = "ATD0" + numbers[i] + ";";
+      // Faz a ligacao
+      Serial2.println(numero);
+      update_serial();
+      Serial.println(numero);
+
+      delay(20000);
+      Serial2.println("ATH"); // Desliga
+      Serial2.println("AT+CMGF=1"); // Configura o modo de Texto
+      update_serial();
+
+      // Configura numero da mensagem
+      numero = "AT+CMGF=\"+55" + numbers[i] + "\"";
+      Serial2.println(numero);
+      update_serial();
+      Serial.println(numero);
+
+      // Envia a Mensagem
+      Serial2.println(messages[i]);
+      update_serial();
+      Serial.println(messages[i]);
+
+      Serial2.write(26);
+      updateSerial();
+    }
+  }
+}
+
+void update_serial()
+{
+  delay(500);
+  while (Serial.available())
+  {
+    // Envia o que foi recebido da Serial Principal para a Software Serial
+    Serial2.write(Serial.read());
+  }
+  while (Serial2.available())
+  {
+    // Envia o que foi recebido pela Software Serial para a Serial Principal
+    Serial.write(Serial2.read());
+  }
 }
