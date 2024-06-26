@@ -1,31 +1,43 @@
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                          INCLUDE E DEFINDE                         //
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 #include <WiFi.h>
 #include <WebServer.h>  // Inclui a biblioteca do servidor web
+#include <SoftwareSerial.h>
 
-#define BOTAO     21
+#define BOTAO     23
 
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                            VARIAVEIS                               //
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
+
+// ----- Servidor
 WebServer server(80);  // Cria uma instância do servidor web
 
-const char* ssid = "Sistema De Testes";
-const char* password = "cobaias123";
+const char* ssid = "Sistema de Alerta";
+const char* password = "bloco9";
 
-String numbers[5] = {"", "", "", "", ""};
-String messages[5] = {"", "", "", "", ""};
+String numbers[5] = {"2149988702542", "", "", "", ""};
+String messages[5] = {"Olha a msg", "", "", "", ""};
 
+// ----- GPRS
+#include <SoftwareSerial.h>
+
+// SoftwareSerial RX 16 
+//                TX 17
+SoftwareSerial software_serial(16, 17);
+
+
+// ----- Misc.
 int _click = 1;
 
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                              SETUP                                 //
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 void setup() 
 {
   // ----- Configuracao do Acess Point
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println();
   Serial.print("Configurando Acess Ponit...");
   
@@ -43,16 +55,19 @@ void setup()
   Serial.println("server HTTP iniciado");
 
   // ----- Configuracao do SIM800l
-  Serial2.begin(115200);
+  software_serial.begin(9600);
   delay(3000);
+
+  Serial.println("Testando o GPRS:");
+  teste_sim800_module();
 
   // ----- Botao
   pinMode(BOTAO, INPUT_PULLUP);
 }
 
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                                LOOP                                //
-// -------------------------------------------------------------------//                      
+// ------------------------------------------------------------------ //                      
 void loop() 
 {
   // Acess Point
@@ -66,13 +81,16 @@ void loop()
     delay(300);
     Serial.println("Ligacao");
 
-    //faz_ligacao();
+    faz_ligacao();
   }
+
+  //software_serial.println("AT+CSQ");
+  //update_serial();
 }
 
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                                 HTML                               //
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 void pagina_principal() 
 {
   String html = "<!DOCTYPE html><html>";
@@ -147,9 +165,9 @@ void pagina_principal()
   server.send(200, "text/html", html);
 }
 
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                           ADICIONAR NUMERO                         //
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 void add_numero() 
 {
   if (server.hasArg("operator") && server.hasArg("number") && server.hasArg("message")) 
@@ -181,9 +199,9 @@ void add_numero()
   server.send(200, "text/plain", "OK");
 }
 
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 //                            APAGAR NUMERO                           //
-// -------------------------------------------------------------------//
+// ------------------------------------------------------------------ //
 void deleta_numero() 
 {
   if (server.hasArg("index")) 
@@ -199,54 +217,88 @@ void deleta_numero()
   server.send(200, "text/plain", "OK");
 }
 
+// ------------------------------------------------------------------ //
+//                            FAZ LIGAÇÃO                             //
+// ------------------------------------------------------------------ //
 void faz_ligacao()
 {
   for(int i = 0; i < 5; i++)
   {
     if (numbers[i] != "") 
     {
-      //Serial2.println("AT+CMGF=0"); // Configura o modo de Ligacao
+      Serial.println("Iniciando os Trabalhos, Fazendo Ligação!");
+
+      //software_serial.println("AT+CMGF=0"); // Configura o modo de Ligacao
       //update_serial();
 
       String numero = "ATD0" + numbers[i] + ";";
       // Faz a ligacao
-      Serial2.println(numero);
+      software_serial.println(numero);
       update_serial();
-      Serial.println(numero);
 
       delay(20000);
-      Serial2.println("ATH"); // Desliga
-      Serial2.println("AT+CMGF=1"); // Configura o modo de Texto
+      software_serial.println("ATH"); // Desliga
+      software_serial.println("AT+CMGF=1"); // Configura o modo de Texto
       update_serial();
 
       // Configura numero da mensagem
+      Serial.println("Mandando MSG!");
       numero = "AT+CMGF=\"+55" + numbers[i] + "\"";
-      Serial2.println(numero);
+      software_serial.println(numero);
       update_serial();
-      Serial.println(numero);
 
       // Envia a Mensagem
-      Serial2.println(messages[i]);
+      software_serial.println(messages[i]);
       update_serial();
-      Serial.println(messages[i]);
 
-      Serial2.write(26);
-      updateSerial();
+      software_serial.write(26);
+      update_serial();
+
+      Serial.println("Finalizou os trabalhos!");
     }
   }
 }
 
+// ------------------------------------------------------------------ //
+//                          ESPELHA AS SERIAIS                        //
+// ------------------------------------------------------------------ //
 void update_serial()
 {
   delay(500);
   while (Serial.available())
   {
     // Envia o que foi recebido da Serial Principal para a Software Serial
-    Serial2.write(Serial.read());
+    software_serial.write(Serial.read());
   }
-  while (Serial2.available())
+  while (software_serial.available())
   {
     // Envia o que foi recebido pela Software Serial para a Serial Principal
-    Serial.write(Serial2.read());
+    Serial.write(software_serial.read());
   }
+}
+
+// ------------------------------------------------------------------ //
+//                          TESTE GERAL DO GPRS                       //
+// ------------------------------------------------------------------ //
+void teste_sim800_module()
+{
+  // Atenção
+  software_serial.println("AT");
+  update_serial();
+
+  // Potência do Sinal
+  software_serial.println("AT+CSQ");
+  update_serial();
+
+  // Número do Cartão
+  software_serial.println("AT+CCID");
+  update_serial();
+
+  // Registro na Rede
+  software_serial.println("AT+CREG?");
+  update_serial();
+
+  // Informações de Identificação
+  software_serial.println("ATI");
+  update_serial();
 }
