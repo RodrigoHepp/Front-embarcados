@@ -123,7 +123,7 @@ void pagina_principal()
   html += "<label for='number' style='width: 50%;'>Número:</label>";
   html += "<input type='number' id='number' style='width: 50%;'>";
   html += "</div>";
-  html += "<div class='input-group' style'width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
+  html += "<div class='input-group' style='width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
   html += "<label for='message' style='width: 50%;'>Mensagem:</label>";
   html += "<input type='text' id='message' style='width: 50%;'>";
   html += "</div>";
