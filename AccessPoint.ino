@@ -14,8 +14,8 @@
 // ----- Servidor
 WebServer server(80);  // Cria uma instância do servidor web
 
-const char* ssid = "Sistema de Testes";
-const char* password = "cobaias123";
+const char* ssid = "Sistema de Alerta";
+const char* password = "bloco9alerta";
 
 String numero_ligacao[5] = {"", "", "", "", ""}; 
 String numeros_originais[5] = {"", "", "", "", ""};
