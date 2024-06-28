@@ -121,9 +121,9 @@ void pagina_principal()
   html += "<label for='number' style='width: 30%;'>Número:</label>";
   html += "<input type='number' id='number' style='width: 70%;'>";
   html += "</div>";
-  html += "<div class='input-group' style'width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: start;'>";
-  html += "<label for='message' style='width: 30%;'>Mensagem:</label>";
-  html += "<input type='text' id='message' style='width: 70%;'>";
+  html += "<div class='input-group' style'width: 80%; display: flex; justify-content: center; align-items: center; text-align: center;'>";
+  html += "<label for='message' style='width: 90%;'>Mensagem:</label>";
+  html += "<input type='text' id='message' style='width: 90%;'>";
   html += "</div>";
   html += "<button class='btn' onclick='addEntry()'>Adicionar</button>";
   html += "<hr>";
