@@ -128,7 +128,7 @@ void pagina_principal()
   html += "<button class='btn' onclick='addEntry()'>Adicionar</button>";
   html += "<hr>";
   html += "<table>";
-  html += "<tr><th>ID</th><th>Numero</th><th>Mensagem</th><th>Ação</th></tr>";
+  html += "<tr><th>ID</th><th>Número</th><th>Mensagem</th><th>Ação</th></tr>";
   for (int i = 0; i < 5; i++) {
     html += "<tr><td>" + String(i + 1) + "</td><td>" + numeros_originais[i] + "</td><td>" + messages[i] + "</td><td><button class='btn btn-danger' onclick='deleteEntry(" + String(i) + ")'>X</button></td></tr>";
   }
