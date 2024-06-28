@@ -14,11 +14,12 @@
 // ----- Servidor
 WebServer server(80);  // Cria uma instância do servidor web
 
-const char* ssid = "Sistema de Alerta";
-const char* password = "bloco9";
+const char* ssid = "Sistema de Testes";
+const char* password = "cobaias123";
 
-String numbers[5] = {"2149988702542", "", "", "", ""};
-String messages[5] = {"Olha a msg", "", "", "", ""};
+String numero_ligacao[5] = {"", "", "", "", ""}; 
+String numeros_originais[5] = {"", "", "", "", ""};
+String messages[5] = {"", "", "", "", ""};
 
 // ----- GPRS
 #include <SoftwareSerial.h>
@@ -83,9 +84,6 @@ void loop()
 
     faz_ligacao();
   }
-
-  //software_serial.println("AT+CSQ");
-  //update_serial();
 }
 
 // ------------------------------------------------------------------ //
@@ -115,15 +113,15 @@ void pagina_principal()
   html += "<div class='container'>";
   html += "<h1>SISTEMA DE ALERTA PARA PROTEÇÃO DE COBAIAS</h1>";
   html += "<div style='display: flex; flex-direction: column; align-items: center;'>";
-  html += "<div class='input-group' style='width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: end;'>";
+  html += "<div class='input-group' style='width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
   html += "<label for='operator' style='width: 50%;'>Operadora:</label>";
   html += "<select id='operator' style='width: 50%;'><option value='41'>Tim</option><option value='15'>Vivo</option><option value='31'>Oi</option><option value='21'>Claro</option></select>";
   html += "</div>";
-  html += "<div class='input-group' style='width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: end;'>";
+  html += "<div class='input-group' style='width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
   html += "<label for='number' style='width: 50%;'>Número:</label>";
   html += "<input type='number' id='number' style='width: 50%;'>";
   html += "</div>";
-  html += "<div class='input-group' style'width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: end;'>";
+  html += "<div class='input-group' style'width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
   html += "<label for='message' style='width: 50%;'>Mensagem:</label>";
   html += "<input type='text' id='message' style='width: 50%;'>";
   html += "</div>";
@@ -132,7 +130,7 @@ void pagina_principal()
   html += "<table>";
   html += "<tr><th>ID</th><th>Numero</th><th>Mensagem</th><th>Ação</th></tr>";
   for (int i = 0; i < 5; i++) {
-    html += "<tr><td>" + String(i + 1) + "</td><td>" + numbers[i] + "</td><td>" + messages[i] + "</td><td><button class='btn btn-danger' onclick='deleteEntry(" + String(i) + ")'>X</button></td></tr>";
+    html += "<tr><td>" + String(i + 1) + "</td><td>" + numeros_originais[i] + "</td><td>" + messages[i] + "</td><td><button class='btn btn-danger' onclick='deleteEntry(" + String(i) + ")'>X</button></td></tr>";
   }
   html += "</table>";
   html += "</div>";
@@ -176,14 +174,15 @@ void add_numero()
     String op = server.arg("operator");
     String number = server.arg("number");
     String message = server.arg("message");
-    number = op + number;
+    String call_number = op + number;
 
     bool adicionado = false;
     for (int i = 0; i < 5; i++) 
     {
-      if (numbers[i] == "") 
+      if (numeros_originais[i] == "") 
       {
-        numbers[i] = number;
+        numeros_originais[i] = number;
+        numero_ligacao[i] = call_number;
         messages[i] = message;
         adicionado = true;
         break;
@@ -211,7 +210,8 @@ void deleta_numero()
 
     if (index >= 0 && index < 5) 
     {
-      numbers[index] = "";
+      numeros_originais[index] = "";
+      numero_ligacao[index] = "";
       messages[index] = "";
     }
   }
@@ -225,35 +225,35 @@ void faz_ligacao()
 {
   for(int i = 0; i < 5; i++)
   {
-    if (numbers[i] != "") 
+    if (numeros_originais[i] != "") 
     {
       Serial.println("Iniciando os Trabalhos, Fazendo Ligação!");
 
-      //software_serial.println("AT+CMGF=0"); // Configura o modo de Ligacao
-      //update_serial();
-
-      String numero = "ATD0" + numbers[i] + ";";
+      String numero = "ATD0" + numero_ligacao[i] + ";";
       // Faz a ligacao
       software_serial.println(numero);
       update_serial();
-
       delay(20000);
+
       software_serial.println("ATH"); // Desliga
+      update_serial();
+
       software_serial.println("AT+CMGF=1"); // Configura o modo de Texto
       update_serial();
 
       // Configura numero da mensagem
-      Serial.println("Mandando MSG!");
-      numero = "AT+CMGF=\"+55" + numbers[i] + "\"";
+      numero = "AT+CMGS=\"+55" + numeros_originais[i] + "\"";
       software_serial.println(numero);
       update_serial();
 
       // Envia a Mensagem
-      software_serial.println(messages[i]);
+      software_serial.print(messages[i]);
       update_serial();
 
       software_serial.write(26);
       update_serial();
+
+      delay(2000);
 
       Serial.println("Finalizou os trabalhos!");
     }
