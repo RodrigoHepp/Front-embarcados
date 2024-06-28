@@ -115,15 +115,15 @@ void pagina_principal()
   html += "<div class='container'>";
   html += "<h1>SISTEMA DE ALERTA PARA PROTEÇÃO DE COBAIAS</h1>";
   html += "<div style='display: flex; flex-direction: column; align-items: center;'>";
-  html += "<div class='input-group' style='width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
+  html += "<div class='input-group' style='width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: end;'>";
   html += "<label for='operator' style='width: 50%;'>Operadora:</label>";
   html += "<select id='operator' style='width: 50%;'><option value='41'>Tim</option><option value='15'>Vivo</option><option value='31'>Oi</option><option value='21'>Claro</option></select>";
   html += "</div>";
-  html += "<div class='input-group' style='width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
+  html += "<div class='input-group' style='width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: end;'>";
   html += "<label for='number' style='width: 50%;'>Número:</label>";
   html += "<input type='number' id='number' style='width: 50%;'>";
   html += "</div>";
-  html += "<div class='input-group' style'width: 30%; display: flex; justify-content: flex-start; align-items: center;'>";
+  html += "<div class='input-group' style'width: 80%; display: flex; justify-content: flex-start; align-items: center; text-align: end;'>";
   html += "<label for='message' style='width: 50%;'>Mensagem:</label>";
   html += "<input type='text' id='message' style='width: 50%;'>";
   html += "</div>";
