@@ -2,10 +2,13 @@
 //                          INCLUDE E DEFINDE                         //
 // ------------------------------------------------------------------ //
 #include <WiFi.h>
-#include <WebServer.h>  // Inclui a biblioteca do servidor web
 #include <SoftwareSerial.h>
+#include <Preferences.h>
+#include <WebServer.h> 
 
-#define BOTAO     23
+#define BOTAO1      23
+#define BOTAO2      22
+#define LED         21
 
 // ------------------------------------------------------------------ //
 //                            VARIAVEIS                               //
@@ -28,15 +31,22 @@ String messages[5] = {"", "", "", "", ""};
 //                TX 17
 SoftwareSerial software_serial(16, 17);
 
-
-// ----- Misc.
-int _click = 1;
+// ----- Eeprom
+Preferences eeprom;
 
 // ------------------------------------------------------------------ //
 //                              SETUP                                 //
 // ------------------------------------------------------------------ //
 void setup() 
 {
+  // ----- Perifericos
+  pinMode(BOTAO1, INPUT_PULLUP);
+  pinMode(BOTAO2, INPUT_PULLUP);
+
+  pinMode(LED, OUTPUT);
+
+  liga_led(); // Identificacao visual de inicio do microcontrolador
+
   // ----- Configuração do Acess Point
   Serial.begin(9600);
   Serial.println();
@@ -62,8 +72,10 @@ void setup()
   Serial.println("Testando o GPRS:");
   teste_sim800_module();
 
-  // ----- Botao
-  pinMode(BOTAO, INPUT_PULLUP);
+  // ----- Eeprom
+  recupera_dados();
+
+  led_blink();  // Setup finalizado, indo para o loop
 }
 
 // ------------------------------------------------------------------ //
@@ -75,14 +87,30 @@ void loop()
   server.handleClient();
 
   // GPRS
-  int _click = digitalRead(BOTAO);
+  int _click1 = digitalRead(BOTAO1);
+  int _click2 = digitalRead(BOTAO2);
 
-  if(_click == 0)
+  // Realizando uma ligacao
+  if(_click1 == 0)
   {
-    delay(300);
-    Serial.println("Ligação");
+    delay(100);
+
+    liga_led();
+    Serial.println("Ligando...");
 
     faz_ligacao();
+    led_blink();
+  }
+
+  if(_click2 == 0)
+  {
+    delay(100);
+
+    liga_led();
+    Serial.println("Salvando...");
+
+    salva_dados();
+    led_blink();
   }
 }
 
@@ -196,6 +224,8 @@ void add_numero()
     }
   }
 
+  salva_dados();
+
   server.send(200, "text/plain", "OK");
 }
 
@@ -215,6 +245,9 @@ void deleta_numero()
       messages[index] = "";
     }
   }
+
+  salva_dados();
+
   server.send(200, "text/plain", "OK");
 }
 
@@ -302,4 +335,82 @@ void teste_sim800_module()
   // Informações de Identificação
   software_serial.println("ATI");
   update_serial();
+}
+
+// ------------------------------------------------------------------ //
+//                       SALVA DADOS NA EEPROM                        //
+// ------------------------------------------------------------------ //
+void salva_dados(void)
+{
+  eeprom.begin("dados", false);
+
+  // Salva os numeros
+  eeprom.putString("n0", numeros_originais[0]); 
+  eeprom.putString("n1", numeros_originais[1]);
+  eeprom.putString("n2", numeros_originais[2]); 
+  eeprom.putString("n3", numeros_originais[3]);
+  eeprom.putString("n4", numeros_originais[4]); 
+
+  // Salva as mensagens
+  eeprom.putString("m0", messages[0]);
+  eeprom.putString("m1", messages[1]); 
+  eeprom.putString("m2", messages[2]);
+  eeprom.putString("m3", messages[3]); 
+  eeprom.putString("m4", messages[4]);
+
+  Serial.println("Dados Salvos!");
+
+  eeprom.end();
+}  
+
+// ------------------------------------------------------------------ //
+//                      RECUPERAR DADOS DA EEPROM                     //
+// ------------------------------------------------------------------ //
+void recupera_dados(void)
+{
+  eeprom.begin("dados", false);
+
+  // Recupera os numeros
+  numeros_originais[0] = eeprom.getString("n0", "");
+  numeros_originais[1] = eeprom.getString("n1", "");
+  numeros_originais[2] = eeprom.getString("n2", "");
+  numeros_originais[3] = eeprom.getString("n3", "");
+  numeros_originais[4] = eeprom.getString("n4", "");
+
+  // Recupera as mensagens
+  messages[0] = eeprom.getString("m0", "");
+  messages[1] = eeprom.getString("m1", "");
+  messages[2] = eeprom.getString("m2", "");
+  messages[3] = eeprom.getString("m3", "");
+  messages[4] = eeprom.getString("m4", "");
+
+  Serial.println("Dados Recuperados!");
+
+  eeprom.end();
+}
+
+// ------------------------------------------------------------------ //
+//                              LED                                   //
+// ------------------------------------------------------------------ //
+void liga_led(void)
+{
+  digitalWrite(LED, HIGH);
+}
+
+void desliga_led(void)
+{
+  digitalWrite(LED, LOW);
+}
+
+void led_blink(void)
+{
+  for(int i = 0; i < 3; i++)
+  {
+    desliga_led();
+    delay(200);
+    liga_led();
+    delay(200);
+  }
+
+  desliga_led();
 }
